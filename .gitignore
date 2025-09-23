@@ -1,0 +1,13 @@
+*.aux
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.gz
+*.toc
+*.pdf
+.DS_Store
+main
+CAssignment/*
