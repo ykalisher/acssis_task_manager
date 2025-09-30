@@ -1,8 +1,6 @@
 import os
-import asyncio
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-from flask import Flask, request, jsonify
 
 app = None
 db = None  
@@ -139,7 +137,7 @@ Commands:
 /help - Show this help
 
 Tips:
-- Use words like 'urgent' or '!!!' for high priority
+- Use words like 'urgent' or 'important' for high priority
 - Use words like 'later' or 'maybe' for low priority
         """
         await update.message.reply_text(help_text)
@@ -175,44 +173,3 @@ Tips:
             await update.message.reply_text(f"Task added: {text} (priority: {priority})")
         else:
             await update.message.reply_text("Type /help for commands")
-
-    async def handle_webhook(self, update_data):
-        try:
-            await self.initialize()
-            
-            update = Update.de_json(update_data, self.application.bot)
-            await self.application.process_update(update)
-            return True
-        except Exception as e:
-            print(f"Error processing update: {e}")
-            return False
-    
-    async def set_webhook(self, webhook_url):
-        try:
-            await self.initialize()
-            
-            await self.application.bot.set_webhook(url=webhook_url)
-            print(f"Webhook set to: {webhook_url}")
-            return True
-        except Exception as e:
-            print(f"Error setting webhook: {e}")
-            return False
-    
-    async def delete_webhook(self):
-        try:
-            await self.initialize()
-            
-            await self.application.bot.delete_webhook()
-            print("Webhook deleted")
-            return True
-        except Exception as e:
-            print(f"Error deleting webhook: {e}")
-            return False
-
-bot_instance = None
-
-def get_bot_instance(flask_app=None, database=None, user_model=None, task_model=None):
-    global bot_instance
-    if bot_instance is None:
-        bot_instance = TaskBot(flask_app, database, user_model, task_model)
-    return bot_instance    

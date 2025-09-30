@@ -341,63 +341,61 @@ def invalid_token_callback(error):
 def missing_token_callback(error):
     return jsonify({'error': 'Authorization token is required'}), 401
 
-@app.route('/telegram/webhook', methods=['POST'])
-def telegram_webhook():
-    try:
-        from bot import get_bot_instance
-        from async_utils import run_async_safe
-        
-        bot = get_bot_instance(app, db, User, Task)
-        
-        update_data = request.get_json()
-        
-        success = run_async_safe(bot.handle_webhook(update_data))
-        return jsonify({'ok': success}), 200 if success else 500
-            
-    except Exception as e:
-        print(f"Webhook error: {e}")
-        return jsonify({'error': 'Webhook processing failed'}), 500
-
-@app.route('/telegram/set-webhook', methods=['POST'])
-def set_telegram_webhook():
-    try:
-        from bot import get_bot_instance
-        from async_utils import run_async_safe
-        
-        webhook_url = request.json.get('webhook_url')
-        if not webhook_url:
-            return jsonify({'error': 'webhook_url required'}), 400
-        
-        bot = get_bot_instance(app, db, User, Task)
-        
-        success = run_async_safe(bot.set_webhook(webhook_url))
-        return jsonify({'ok': success, 'webhook_url': webhook_url}), 200 if success else 500
-            
-    except Exception as e:
-        print(f"Set webhook error: {e}")
-        return jsonify({'error': 'Failed to set webhook'}), 500
-
-@app.route('/telegram/delete-webhook', methods=['POST'])
-def delete_telegram_webhook():
-    """Delete the webhook (switch back to polling if needed)"""
-    try:
-        from bot import get_bot_instance
-        from async_utils import run_async_safe
-        
-        bot = get_bot_instance(app, db, User, Task)
-        
-        success = run_async_safe(bot.delete_webhook())
-        return jsonify({'ok': success}), 200 if success else 500
-            
-    except Exception as e:
-        print(f"Delete webhook error: {e}")
-        return jsonify({'error': 'Failed to delete webhook'}), 500
-
 if __name__ == "__main__":
-    if os.getenv('TELEGRAM_BOT_TOKEN'):
-        from bot import get_bot_instance
-        bot = get_bot_instance(app, db, User, Task)
-        print("Telegram bot initialized (webhook mode)")
-        print("Use /telegram/set-webhook endpoint to configure webhook URL")
+    import asyncio
+    import threading
     
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    if os.getenv('TELEGRAM_BOT_TOKEN'):
+        async def run_polling():
+            def run_flask():
+                app.run(debug=False, host='0.0.0.0', port=5001, use_reloader=False)
+            
+            flask_thread = threading.Thread(target=run_flask, daemon=True)
+            flask_thread.start()
+            
+            from bot import TaskBot
+            
+            with app.app_context():
+                bot = TaskBot(app, db, User, Task)
+                
+                try:
+                    await bot.initialize()
+                    await bot.application.bot.delete_webhook()
+
+                    await bot.application.initialize()
+                    await bot.application.start()
+                    await bot.application.updater.start_polling(drop_pending_updates=True)
+                    
+                    try:
+                        while True:
+                            await asyncio.sleep(1)
+                    except (KeyboardInterrupt, asyncio.CancelledError):
+                        pass  
+                    
+                except (KeyboardInterrupt, asyncio.CancelledError):
+                    pass  
+                except Exception as e:
+                    print(f"Error: {e}")
+                finally:
+                    print("\nShutting down...")
+
+                    try:
+                        if hasattr(bot.application.updater, 'stop'):
+                            await bot.application.updater.stop()
+                        if hasattr(bot.application, 'stop'):
+                            await bot.application.stop()
+                        if hasattr(bot.application, 'shutdown'):
+                            await bot.application.shutdown()
+                        print("Bot stopped successfully.")
+                    except Exception as e:
+                        print(f"Shutdown warning: {e}")
+        
+        try:
+            asyncio.run(run_polling())
+        except KeyboardInterrupt:
+            print("\nBoth services stopped by user.")
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+    else:
+        print("TELEGRAM_BOT_TOKEN not found - running Flask only")
+        app.run(debug=True, host='0.0.0.0', port=5001)
