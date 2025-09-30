@@ -24,12 +24,12 @@ cors = CORS(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
-# Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+    telegram_id = db.Column(db.BigInteger, unique=True, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     tasks = db.relationship('Task', backref='user', lazy=True, cascade='all, delete-orphan')
@@ -329,7 +329,6 @@ def internal_error(error):
     db.session.rollback()
     return jsonify({'error': 'Internal server error'}), 500
 
-# JWT Error handlers
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header, jwt_payload):
     return jsonify({'error': 'Token has expired'}), 401
@@ -342,5 +341,63 @@ def invalid_token_callback(error):
 def missing_token_callback(error):
     return jsonify({'error': 'Authorization token is required'}), 401
 
+@app.route('/telegram/webhook', methods=['POST'])
+def telegram_webhook():
+    try:
+        from bot import get_bot_instance
+        from async_utils import run_async_safe
+        
+        bot = get_bot_instance(app, db, User, Task)
+        
+        update_data = request.get_json()
+        
+        success = run_async_safe(bot.handle_webhook(update_data))
+        return jsonify({'ok': success}), 200 if success else 500
+            
+    except Exception as e:
+        print(f"Webhook error: {e}")
+        return jsonify({'error': 'Webhook processing failed'}), 500
+
+@app.route('/telegram/set-webhook', methods=['POST'])
+def set_telegram_webhook():
+    try:
+        from bot import get_bot_instance
+        from async_utils import run_async_safe
+        
+        webhook_url = request.json.get('webhook_url')
+        if not webhook_url:
+            return jsonify({'error': 'webhook_url required'}), 400
+        
+        bot = get_bot_instance(app, db, User, Task)
+        
+        success = run_async_safe(bot.set_webhook(webhook_url))
+        return jsonify({'ok': success, 'webhook_url': webhook_url}), 200 if success else 500
+            
+    except Exception as e:
+        print(f"Set webhook error: {e}")
+        return jsonify({'error': 'Failed to set webhook'}), 500
+
+@app.route('/telegram/delete-webhook', methods=['POST'])
+def delete_telegram_webhook():
+    """Delete the webhook (switch back to polling if needed)"""
+    try:
+        from bot import get_bot_instance
+        from async_utils import run_async_safe
+        
+        bot = get_bot_instance(app, db, User, Task)
+        
+        success = run_async_safe(bot.delete_webhook())
+        return jsonify({'ok': success}), 200 if success else 500
+            
+    except Exception as e:
+        print(f"Delete webhook error: {e}")
+        return jsonify({'error': 'Failed to delete webhook'}), 500
+
 if __name__ == "__main__":
+    if os.getenv('TELEGRAM_BOT_TOKEN'):
+        from bot import get_bot_instance
+        bot = get_bot_instance(app, db, User, Task)
+        print("Telegram bot initialized (webhook mode)")
+        print("Use /telegram/set-webhook endpoint to configure webhook URL")
+    
     app.run(debug=True, host='0.0.0.0', port=5001)
