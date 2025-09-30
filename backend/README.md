@@ -60,6 +60,7 @@ python app.py
 ```
 
 This single command starts both:
+
 - Flask API server at `http://localhost:5001`
 - Telegram bot in polling mode
 
@@ -75,6 +76,7 @@ Once the bot is set up:
 6. Use words like "urgent" or "important" for high priority tasks
 
 Bot Commands:
+
 - `/start` - Start the bot
 - `/link email password` - Link your account
 - `/new description` - Add a new task
