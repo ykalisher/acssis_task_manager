@@ -1,10 +1,12 @@
 import type { Route } from "../+types/home";
 import React, { useState, useMemo, type SyntheticEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { CreateTaskForm } from "./taskCreateComponent";
 import {
     Search,
     PlusCircle,
     Trash,
+    X
 } from "lucide-react";
 
 // ---------------- TYPES ----------------
@@ -403,92 +405,3 @@ export default function TasksList({ }: Route.ComponentProps) {
 }
 
 // ---------------- CREATE TASK FORM ----------------
-function CreateTaskForm({
-    onCancel,
-    onCreate,
-}: {
-    onCancel: () => void;
-    onCreate: (task: Omit<Task, "id">) => void;
-}) {
-    const [title, setTitle] = useState("");
-    const [desc, setDesc] = useState("");
-    const [priority, setPriority] = useState<Priority>("Medium");
-    const [tags, setTags] = useState("");
-    const [due, setDue] = useState("");
-
-    function submit() {
-        if (!title.trim()) return;
-        onCreate({
-            title,
-            description: desc,
-            status: "todo",
-            assignees: [],
-            priority,
-            tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
-            due,
-        });
-    }
-
-    return (
-        <div>
-            <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Create task</h3>
-                <button onClick={onCancel} className="text-gray-500">
-                    <Trash size={16} />
-                </button>
-            </div>
-
-            <div className="space-y-3">
-                <input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Title"
-                    className="w-full border rounded-lg px-3 py-2"
-                />
-                <textarea
-                    value={desc}
-                    onChange={(e) => setDesc(e.target.value)}
-                    placeholder="Description"
-                    className="w-full border rounded-lg px-3 py-2 h-24"
-                />
-
-                <div className="flex gap-2">
-                    <select
-                        value={priority}
-                        onChange={(e) => setPriority(e.target.value as Priority)}
-                        className="border rounded-lg px-3 py-2"
-                    >
-                        <option>High</option>
-                        <option>Medium</option>
-                        <option>Low</option>
-                    </select>
-
-                    <input
-                        value={tags}
-                        onChange={(e) => setTags(e.target.value)}
-                        placeholder="tags (comma separated)"
-                        className="flex-1 border rounded-lg px-3 py-2"
-                    />
-
-                    <input
-                        value={due}
-                        onChange={(e) => setDue(e.target.value)}
-                        type="date"
-                        className="border rounded-lg px-3 py-2"
-                    />
-                </div>
-
-                <div className="flex justify-end gap-2 mt-2">
-                    <button onClick={onCancel} className="px-4 py-2 rounded-md border">
-                        Cancel
-                    </button>
-                    <button
-                        onClick={submit}
-                    >
-                        Submit
-                    </button>
-                </div>
-            </div>
-        </div>
-    )
-}
