@@ -24,12 +24,12 @@ cors = CORS(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
-# Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+    telegram_id = db.Column(db.BigInteger, unique=True, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     tasks = db.relationship('Task', backref='user', lazy=True, cascade='all, delete-orphan')
@@ -329,7 +329,6 @@ def internal_error(error):
     db.session.rollback()
     return jsonify({'error': 'Internal server error'}), 500
 
-# JWT Error handlers
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header, jwt_payload):
     return jsonify({'error': 'Token has expired'}), 401
@@ -343,4 +342,60 @@ def missing_token_callback(error):
     return jsonify({'error': 'Authorization token is required'}), 401
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    import asyncio
+    import threading
+    
+    if os.getenv('TELEGRAM_BOT_TOKEN'):
+        async def run_polling():
+            def run_flask():
+                app.run(debug=False, host='0.0.0.0', port=5001, use_reloader=False)
+            
+            flask_thread = threading.Thread(target=run_flask, daemon=True)
+            flask_thread.start()
+            
+            from bot import TaskBot
+            
+            with app.app_context():
+                bot = TaskBot(app, db, User, Task)
+                
+                try:
+                    await bot.initialize()
+                    await bot.application.bot.delete_webhook()
+
+                    await bot.application.initialize()
+                    await bot.application.start()
+                    await bot.application.updater.start_polling(drop_pending_updates=True)
+                    
+                    try:
+                        while True:
+                            await asyncio.sleep(1)
+                    except (KeyboardInterrupt, asyncio.CancelledError):
+                        pass  
+                    
+                except (KeyboardInterrupt, asyncio.CancelledError):
+                    pass  
+                except Exception as e:
+                    print(f"Error: {e}")
+                finally:
+                    print("\nShutting down...")
+
+                    try:
+                        if hasattr(bot.application.updater, 'stop'):
+                            await bot.application.updater.stop()
+                        if hasattr(bot.application, 'stop'):
+                            await bot.application.stop()
+                        if hasattr(bot.application, 'shutdown'):
+                            await bot.application.shutdown()
+                        print("Bot stopped successfully.")
+                    except Exception as e:
+                        print(f"Shutdown warning: {e}")
+        
+        try:
+            asyncio.run(run_polling())
+        except KeyboardInterrupt:
+            print("\nBoth services stopped by user.")
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+    else:
+        print("TELEGRAM_BOT_TOKEN not found - running Flask only")
+        app.run(debug=True, host='0.0.0.0', port=5001)

@@ -35,9 +35,17 @@ Create a `.env` file in the backend directory:
 DATABASE_URL=sqlite:///taskmanager.db
 SECRET_KEY=your-secret-key-here
 JWT_SECRET_KEY=your-jwt-secret-key-here
+TELEGRAM_BOT_TOKEN=your-bot-token-here
 ```
 
-### 3. Initialize Database
+### 3. Telegram Bot Setup
+
+1. Message @BotFather on Telegram
+2. Use `/newbot` command and follow instructions
+3. Copy the bot token to your `.env` file
+4. The bot starts automatically when you run the app
+
+### 4. Initialize Database
 
 ```bash
 python init_db.py
@@ -45,13 +53,35 @@ python init_db.py
 
 This will create the database and add sample users and tasks for testing.
 
-### 4. Run the Application
+### 5. Run the Application
 
 ```bash
 python app.py
 ```
 
-The API will be available at `http://localhost:5001`
+This single command starts both:
+
+- Flask API server at `http://localhost:5001`
+- Telegram bot in polling mode
+
+## Telegram Bot Usage
+
+Once the bot is set up:
+
+1. Start a chat with your bot on Telegram
+2. Use `/start` to begin
+3. Link your account: `/link your@email.com yourpassword`
+4. Add tasks: `/new Buy groceries` or just send any message
+5. View tasks: `/tasks`
+6. Use words like "urgent" or "important" for high priority tasks
+
+Bot Commands:
+
+- `/start` - Start the bot
+- `/link email password` - Link your account
+- `/new description` - Add a new task
+- `/tasks` - List pending tasks
+- `/help` - Show help
 
 ## API Usage Examples
 
@@ -171,3 +201,5 @@ curl -X PUT http://localhost:5001/api/tasks/1 \
 - Database file created as `taskmanager.db` in the backend directory
 - All datetime fields use ISO format
 - Priority levels: "low", "medium", "high"
+- Architecture: Flask runs in main thread, Telegram bot polling runs in background thread
+- Bot uses polling mode for simple deployment (no webhooks, SSL, or port forwarding needed)

@@ -1,7 +1,9 @@
+# Python version: 3.13.7
 Flask==3.1.2
 Flask-SQLAlchemy==3.1.1
 Flask-CORS==6.0.1
 Flask-Bcrypt==1.0.1
 Flask-JWT-Extended==4.7.0
 python-dotenv==1.1.1
+python-telegram-bot==22.3
 Flask-Migrate==4.0.7
