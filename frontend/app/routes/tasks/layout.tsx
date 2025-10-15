@@ -14,7 +14,7 @@ export default function Layout({}:Route.ComponentProps) {
       <header className="bg-white shadow p-4 flex justify-between h-1/10">
         <h1 className="text-xl font-semibold text-gray-700">Task Manager</h1>
         <nav className="space-x-4">
-          <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
+          <Link to="/auth/logout" className="text-blue-600 hover:underline">Logout</Link>
         </nav>
       </header>
 

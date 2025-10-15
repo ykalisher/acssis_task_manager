@@ -5,9 +5,13 @@ import { CreateTaskForm } from "./taskCreateComponent";
 import {
     Search,
     PlusCircle,
-    Trash,
     X
 } from "lucide-react";
+import { redirect, useFetcher, useLoaderData } from "react-router";
+import {
+    getSession,
+} from "../../sessions";
+
 
 // ---------------- TYPES ----------------
 type Status = "todo" | "inprogress" | "done";
@@ -21,11 +25,17 @@ interface Task {
     assignees: string[];
     priority: Priority;
     tags: string[];
-    due: string;
+    due_date: string;
 }
 
+const STATUS_COLUMNS = [
+    { key: "todo", title: "To Do" },
+    { key: "inprogress", title: "In Progress" },
+    { key: "done", title: "Done" },
+] as const;
+
 // ---------------- SAMPLE DATA ----------------
-const SAMPLE_TASKS: Task[] = [
+let SAMPLE_TASKS: Task[] = [
     {
         id: "t1",
         title: "Design onboarding flow",
@@ -34,7 +44,7 @@ const SAMPLE_TASKS: Task[] = [
         assignees: ["AL"],
         priority: "High",
         tags: ["UX", "Frontend"],
-        due: "2025-10-03",
+        due_date: "2025-10-03",
     },
     {
         id: "t2",
@@ -44,7 +54,7 @@ const SAMPLE_TASKS: Task[] = [
         assignees: ["YB"],
         priority: "Medium",
         tags: ["Backend", "Payments"],
-        due: "2025-10-07",
+        due_date: "2025-10-07",
     },
     {
         id: "t3",
@@ -54,7 +64,7 @@ const SAMPLE_TASKS: Task[] = [
         assignees: [],
         priority: "High",
         tags: ["SRE"],
-        due: "2025-09-30",
+        due_date: "2025-09-30",
     },
     {
         id: "t4",
@@ -64,15 +74,89 @@ const SAMPLE_TASKS: Task[] = [
         assignees: ["AL", "YB"],
         priority: "Low",
         tags: ["ML"],
-        due: "2025-09-20",
+        due_date: "2025-09-20",
     },
 ];
 
-const STATUS_COLUMNS = [
-    { key: "todo", title: "To Do" },
-    { key: "inprogress", title: "In Progress" },
-    { key: "done", title: "Done" },
-] as const;
+export const loader = async ({
+    request,
+    params
+}: Route.LoaderArgs) => {
+    const session = await getSession(
+        request.headers.get("Cookie"),
+    );
+    if (!session.has("userId")) {
+        // Redirect to the home page if they are already signed in.
+        return redirect("/auth/login")
+    }
+    try {
+        const res = await fetch(`${process.env.API_URL ?? ""}/api/tasks`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${(session?.data?.userId as unknown as any).token}`,
+            },
+            body: null,
+            credentials: "include", // if you use cookies / sessions
+        });
+
+        if (!res.ok) {
+
+            const err = await res.json().catch(() => ({}));
+            return { ok: false, message: err.message || "Invalid credentials" };
+        }
+
+        const data = await res.json() as Task[];
+        console.log(data)
+        data.map((task: Task) => {
+            task.tags = JSON.parse(task.tags as unknown as string);
+            return task;
+        })
+        return { tasks: data };
+    } catch (err: any) {
+        return { ok: false, message: err.message };
+    }
+}
+
+export const action = async ({
+    request,
+}: Route.ActionArgs) => {
+    const session = await getSession(
+        request.headers.get("Cookie"),
+    );
+    if (!session.has("userId")) {
+        // Redirect to the home page if they are already signed in.
+        return redirect("/auth/login")
+    }
+    let formData = await request.formData();
+    let data = formData.get("data")
+
+    let task = JSON.parse(data as string) as Task
+    console.log(task)
+    try {
+        const res = await fetch(`${process.env.API_URL ?? ""}/api/tasks`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${(session?.data?.userId as unknown as any).token}`,
+            },
+            body: JSON.stringify({ title: task.title, description: task.description, priority: task.priority, due_date: task.due_date, tags: JSON.stringify(task.tags), status: task.status }),
+            credentials: "include", // if you use cookies / sessions
+        });
+        if (!res.ok) {
+
+            const err = await res.json().catch(() => ({}));
+            session.flash("error", err.message);
+        }
+
+        const data = await res.json();
+        console.log(data)
+        return { ok: true, message: "complete" };
+    } catch (err: any) {
+        return { ok: false, message: err.message };
+    }
+}
+
 
 // ---------------- HELPERS ----------------
 function useFilteredTasks(
@@ -133,16 +217,18 @@ function PriorityPill({ priority }: { priority: Priority }) {
 }
 
 // ---------------- MAIN COMPONENT ----------------
-export default function TasksList({ }: Route.ComponentProps) {
-    const [tasks, setTasks] = useState<Task[]>(SAMPLE_TASKS);
+export default function TasksList({ loaderData }: Route.ComponentProps) {
+    const { tasks } = useLoaderData<typeof loader>();
+    const fetcher = useFetcher()
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const [query, setQuery] = useState("");
     const [isModalOpen, setModalOpen] = useState(false);
     const [tagFilter, setTagFilter] = useState<string[]>([]);
     const [assigneeFilter, setAssigneeFilter] = useState<string[]>([]);
     const [draggingId, setDraggingId] = useState<string | null>(null);
-
-    const filtered = useFilteredTasks(tasks, query, tagFilter, assigneeFilter);
+    console.log("here are tasks")
+    console.log(tasks)
+    const filtered = useFilteredTasks(tasks ? tasks : [], query, tagFilter, assigneeFilter);
 
     function onDragStart(e: MouseEvent | TouchEvent | PointerEvent, id: string) {
         setDraggingId(id)
@@ -150,22 +236,33 @@ export default function TasksList({ }: Route.ComponentProps) {
 
     function onDrop(e: React.DragEvent, status: Status) {
         const id = draggingId
-        setTasks((prev) =>
-            prev.map((t) => (t.id === id ? { ...t, status } : t))
-        );
+        let ts = tasks?.find((t: Task) => t.id == id)
+        ts ? ts.status = status : ts
+        fetcher.submit(
+            { data: JSON.stringify(ts) },
+            { action: "/tasks/update", method: "post" }
+        )
     }
 
     function onCreateTask(payload: Omit<Task, "id">) {
-        setTasks((prev) => [
-            { id: "t" + (prev.length + 1), ...payload },
-            ...prev,
-        ]);
+        fetcher.submit(
+            { data: JSON.stringify({ ...payload }) },
+            { method: "post", action: "/tasks" },
+        )
         setModalOpen(false);
+    }
+
+    function onDeleteTask(payload: Task) {
+        fetcher.submit(
+            { data: JSON.stringify({ ...payload }) },
+            { method: "post", action: "/tasks/delete" },
+        )
+        setSelectedTask(null)
     }
 
     function uniqueTags(): string[] {
         const s = new Set<string>();
-        tasks.forEach((t) => (t.tags || []).forEach((tag) => s.add(tag)));
+        tasks?.forEach((t: any) => (t.tags || []).forEach((tag: any) => s.add(tag)));
         return Array.from(s);
     }
 
@@ -276,7 +373,7 @@ export default function TasksList({ }: Route.ComponentProps) {
                                                             ))}
                                                         </div>
                                                         <div className="text-xs text-gray-500">
-                                                            {task.due}
+                                                            {task.due_date}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -343,16 +440,11 @@ export default function TasksList({ }: Route.ComponentProps) {
                                 </div>
 
                                 <div className="mt-3 text-xs text-gray-500">Due</div>
-                                <div className="mt-1">{selectedTask.due}</div>
+                                <div className="mt-1">{selectedTask.due_date}</div>
 
                                 <div className="mt-6 flex gap-2">
                                     <button
-                                        onClick={() => {
-                                            setTasks((prev) =>
-                                                prev.filter((p) => p.id !== selectedTask.id)
-                                            );
-                                            setSelectedTask(null);
-                                        }}
+                                        onClick={() => onDeleteTask(selectedTask)}
                                         className="px-3 py-2 rounded-md border text-sm"
                                     >
                                         Delete
@@ -404,4 +496,3 @@ export default function TasksList({ }: Route.ComponentProps) {
     );
 }
 
-// ---------------- CREATE TASK FORM ----------------

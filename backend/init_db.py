@@ -34,16 +34,16 @@ def init_db():
         
         tasks = [
             Task(title="Setup project repo", description="Init git and basic structure", 
-                 priority="high", user_id=john.id, due_date=datetime.now() + timedelta(days=2)),
+                 priority="high", user_id=john.id, due_date=datetime.now() + timedelta(days=2),status='todo'),
             Task(title="Database design", description="Create ERD and tables", 
-                 priority="medium", user_id=john.id, due_date=datetime.now() + timedelta(days=5)),
+                 priority="medium", user_id=john.id, due_date=datetime.now() + timedelta(days=5),status='todo'),
             Task(title="API docs", description="Document endpoints", 
                  priority="medium", user_id=jane.id, completed=True, 
-                 due_date=datetime.now() - timedelta(days=1)),
+                 due_date=datetime.now() - timedelta(days=1),status='todo'),
             Task(title="Auth system", description="User login/register", 
-                 priority="high", user_id=jane.id, due_date=datetime.now() + timedelta(days=7)),
+                 priority="high", user_id=jane.id, due_date=datetime.now() + timedelta(days=7),status='todo'),
             Task(title="Unit tests", description="Test coverage", 
-                 priority="low", user_id=john.id, due_date=datetime.now() + timedelta(days=10))
+                 priority="low", user_id=john.id, due_date=datetime.now() + timedelta(days=10),status='todo')
         ]
         
         for task in tasks:

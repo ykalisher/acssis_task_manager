@@ -80,7 +80,8 @@ class Task(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     due_date = db.Column(db.DateTime)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-
+    status= db.Column(db.String(100), nullable=False)
+    tags= db.Column(db.Text)
     def to_dict(self):
         return {
             'id': self.id,
@@ -91,7 +92,9 @@ class Task(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'due_date': self.due_date.isoformat() if self.due_date else None,
-            'user_id': self.user_id
+            'user_id': self.user_id,
+            'status':self.status,
+            'tags': self.tags
         }
 
 @app.route("/")
@@ -232,7 +235,9 @@ def create_task():
             title=data['title'],
             description=data.get('description', ''),
             priority=data.get('priority', 'medium'),
-            user_id=user_id
+            user_id=user_id,
+            status= data.get('status','todo'),
+            tags= data.get('tags',''),
         )
         
         if 'due_date' in data and data['due_date']:
@@ -278,12 +283,16 @@ def update_task(task_id):
         
         if 'title' in data:
             task.title = data['title']
+        if 'status' in data:
+            task.status = data['status']
         if 'description' in data:
             task.description = data['description']
         if 'completed' in data:
             task.completed = data['completed']
         if 'priority' in data:
             task.priority = data['priority']
+        if 'status' in data:
+            task.status = data['status']
         if 'due_date' in data:
             if data['due_date']:
                 try:

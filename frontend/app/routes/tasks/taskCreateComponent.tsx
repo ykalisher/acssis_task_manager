@@ -19,7 +19,7 @@ interface Task {
     assignees: string[];
     priority: Priority;
     tags: string[];
-    due: string;
+    due_date: string;
 }
 
 export function CreateTaskForm({
@@ -33,7 +33,7 @@ export function CreateTaskForm({
     const [desc, setDesc] = useState("");
     const [priority, setPriority] = useState<Priority>("Medium");
     const [tags, setTags] = useState("");
-    const [due, setDue] = useState("");
+    const [due_date, setDue_date] = useState("");
 
     function submit() {
         if (!title.trim()) return;
@@ -44,7 +44,7 @@ export function CreateTaskForm({
             assignees: [],
             priority,
             tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
-            due,
+            due_date,
         });
     }
 
@@ -95,8 +95,8 @@ export function CreateTaskForm({
                         <label htmlFor="date">Date</label>
                         <input
                             name="date"
-                            value={due}
-                            onChange={(e) => setDue(e.target.value)}
+                            value={due_date}
+                            onChange={(e) => setDue_date(e.target.value)}
                             type="date"
                             className="border rounded-lg px-3 py-2 h-10"
                         />

@@ -19,6 +19,6 @@ WORKDIR /app
 RUN cd frontend && npm install
 
 EXPOSE 3000 5000
-
+ENTRYPOINT ["/app/backend/init.sh"]
 # Start both servers
 CMD bash -c "cd backend && FLASK_APP=app.py FLASK_RUN_HOST=0.0.0.0 flask run --reload & cd frontend && npm run dev"

@@ -1,8 +1,8 @@
 import {
     getSession,
     destroySession,
-} from "../sessions";
-import type { Route } from "./+types/home";
+} from "../../sessions";
+import type { Route } from "../+types/home";
 import { redirect } from "react-router";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -11,7 +11,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     );
     if (session.has("userId")) {
         // Redirect to the home page if they are already signed in.
-        return redirect("/tasks");
+        return redirect("/auth/login", {
+            headers: {
+                "Set-Cookie": await destroySession(session),
+            },
+        });
     }
     return redirect("/auth/login");
 }
