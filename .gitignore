@@ -8,6 +8,7 @@
 *.gz
 *.toc
 *.pdf
+*.bbl
 .DS_Store
 main
 CAssignment/*
