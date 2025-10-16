@@ -138,7 +138,7 @@
 \newcommand{\No}{\ding{55}}
 
 \renewcommand{\bfdefault}{b}
-\clearpage{\pagestyle{empty}\cleardoublepage}
+\clearpage
 
 %% You can remove this line if you compile with --synctex=1 (see Makefile)
 \synctex=1
@@ -162,7 +162,9 @@
 \end{titlepage}
 
 \vspace*{3cm}
+
 \section*{Abstract}
+\addcontentsline{toc}{section}{Abstract}
 
 Today, students in higher education must manage a wide variety of tasks in very constrained timeframes as a part of their studies, which necessitates the use of tools to better manage their workload. Prior research has shown that poor time management and academic stress can significantly affect student performance and well-being \citep{misra2000college}; likewise, effective learning strategies and self-regulation are key predictors of academic success \citep{zimmerman2002becoming}.
 
@@ -171,8 +173,8 @@ However, despite how many of these tools exist, very few of them are tailored fo
 Through our efforts, we were successful in creating a flexible and portable task management tool. The tool can run on systems with even minimal computing power and works for a variety of different tasks. However, there is still room for improvement to add more functionality and improve accessibility with better language and task input support.
 
 \clearpage
-
 \tableofcontents
+\clearpage
 
 \section{Introduction}
 
@@ -203,13 +205,30 @@ Students have four key types of tasks that we have identified as a part of their
 \item Self-guided learning – Many classes require students to do additional self-guided learning outside of lectures in the form of articles and books to read or videos to watch. These vary in length, content, and structure, but can usually be broken down into discrete subparts. Most teachers do not have formal deadlines for the learning, but will reference it throughout the course or will expect the student to use the knowledge in various assignments or exams.
 \item Exam preparation – Many courses end with a comprehensive exam covering all of the material taught in the course. Evidence shows that some study techniques are much more effective than others \citep{dunlosky2013improving}, which reinforces the importance of structured preparation tools. Succeeding in these exams requires extensive preparation and review of the course’s provided resources, and may also entail completing practice exams or exercises provided by the instructor.
 \item Group work – Group work is similar to individual work, with the added complexity of having to communicate and orchestrate tasks with other students. This means all members of the group should have easy access to not just which tasks need to be done for an assignment, but also the current state of all tasks and who is assigned to work on them. This also includes needing to be able to schedule times when work needs to be done in teams.
-
+\end{enumerate}
 
 \section{Methodology}
+\subsection{Scope}
 We determined the functional requirements for our task management tool based on our own experiences as students getting master’s degrees from Uppsala University. Of our four group members, two of us are majoring in computer science, and two are majoring in embedded systems. We used our current courses for reference on the kind of tasks we would need to be able to track in the application, and compared them to the tools we currently have access to. 
 
 Furthermore, we scoped the project based on specific constraints provided by the course. We had 8 weeks to design, implement, test, and deploy our project, and needed to utilize a raspberry pi in the process. Our team also primarily had experience writing backend applications in python and simple frontend applications with javascript, HTML, and CSS. As a result, we determined the most effective way for us to build this application was to create a python-based REST API [14] that could be hosted on a raspberry pi, and would have a simple web frontend that would make requests to the backend to view, edit, and manage tasks.
 
+We began with a list of base requirements that our tool needed to be able to handle. The tool needed to allow for users to create accounts to store their task data. Both the frontend and backend needed to be able to handle logins, sessions, and invalid login attempts. Then, the frontend needed to be able to show a list of tasks and give the user the ability to add, edit, delete or mark tasks as complete. Likewise, the backend needed to have endpoints to enable each of those functions for a specified user for a specified task. These functions needed to be clear and doable from both desktop and mobile browsers.
+
+Additionally, we wanted to add “chatbot” functionality to add tasks via natural language. On the frontend, this meant adding an interface that allowed users to type in tasks they wanted to add with the details they cared about. On the backend, we created an additional endpoint to parse the user’s request using a structured format, and then making additional requests to the relevant endpoints. The backend also needed to handle requests that weren’t structured properly, and respond with appropriate messages to explain to the user how to make a correct request. 
+
+\subsection{Workflow}
+Our team used a waterfall-style model of software development. We began by defining the scope and requirements of the app and what functionality we expected to implement when. Then we split up the work into different roles and assigned roles to each team member. We identified four core roles:
+
+\begin{enumerate}
+\item Project Manager - In charge of managing communication, ensuring project is on track or providing support to keep project on track, and documenting progress.
+\item Frontend Developer - In charge of creating interactive user interface for the app
+\item Backend Deveoper - In charge of creating the API and database for the app
+\item QA Engineer - In charge of testing and validating the app, ensuring the product meets requirements, and documenting outcomes.
+\end{enumerate}
+
+
+The team met every week virtually to discuss progress, blockers, and upcoming deadlines, and maintained active communication through Whatsapp to coordinate tasks that required multiple team members.
 
 \section{Ethical Considerations}
 Students have a wide variety of backgrounds and needs when it comes to creating and managing tasks. Prior work emphasizes that digital learning and productivity tools must take into account diverse accessibility requirements to avoid excluding certain groups of learners \citep{seale2013learning}. We wanted to be mindful of this when designing our website by ensuring that it is accessible for a wide variety of people. This meant providing features like the ability to change text to more dyslexic-friendly fonts or to be larger, ensuring there was enough space for users to enter tasks in different languages \citep{al2016universal}, and providing options for how much information a user wants to see at once in case they may feel overwhelmed seeing too many tasks at once \citep{spina2019wcag}. International perspectives on accessibility stress that tools should be adaptable to diverse cultural and linguistic contexts \citep{world2011world}.
@@ -220,7 +239,6 @@ One of our last big accessibility features was to make the tool more accessible 
 
 
 \section{Implementation}
-We began with a list of base requirements that our tool needed to be able to handle. The tool needed to allow for users to create accounts to store their task data. Both the frontend and backend needed to be able to handle logins, sessions, and invalid login attempts. Then, the frontend needed to be able to show a list of tasks and give the user the ability to add, edit, delete or mark tasks as complete. Likewise, the backend needed to have endpoints to enable each of those functions for a specified user for a specified task. These functions needed to be clear and doable from both desktop and mobile browsers. Additionally, we wanted to add “chatbot” functionality to add tasks via natural language. On the frontend, this meant adding an interface that allowed users to type in tasks they wanted to add with the details they cared about. On the backend, we created an additional endpoint to parse the user’s request using a structured format, and then making additional requests to the relevant endpoints. The backend also needed to handle requests that weren’t structured properly, and respond with appropriate messages to explain to the user how to make a correct request. 
 
 Once we finished developing the frontend and backend, we needed to test the application to ensure it ran properly on the Raspberry Pi, which was our baseline for hardware that the app could run on. The Raspberry Pi has frequently been used in educational and lightweight computing projects due to its accessibility and low cost \citep{richardson2014getting}. It needed to be able to install the frameworks we needed, clone the repository, and start up the web app to be accessible from the internet. For the backend, we selected Python with a REST API architecture, leveraging lightweight frameworks such as Flask that are commonly used in educational and rapid development contexts \citep{grinberg2018flask}. We then ran tests to ensure everything worked as expected.
 
