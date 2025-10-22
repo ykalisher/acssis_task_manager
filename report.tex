@@ -33,12 +33,10 @@
 \Crefname{section}{\S}{\S\S}
 
 \usepackage{enumitem}   % Improved lists 
-% \setlist{noitemsep} % To make all lists compact
 \setlist[itemize]{itemsep=0pt}
 \setlist[itemize,1]{label=--}
 \setlist[itemize,2]{label=\ensuremath{\triangleright}}
 \setlist[itemize,3]{label=\RED{AVOID}}
-% Description lists to use semibold labels
 \setlist[description]{font=\libertineSB}
 
 \usepackage[oneside,labelfont=sf]{caption}
@@ -149,34 +147,28 @@
 
 \begin{titlepage}
     \centering
-    % Vertical centering
+
     \vspace*{\fill}
 
-    % University name
     {\Large Uppsala University\par}
     \vspace{1cm}
 
-    % Seal/logo
     \includegraphics[width=0.25\textwidth]{Uppsala_University_seal.png}\par
     \vspace{1cm}
     
     {\Large Adv. Computer Science Studies in Sweden \\ \& Intro to Studies in Embedded Systems, joint section \\ 1DT032/1DT086 HT25}
 
-    % Title
-    \rule{\textwidth}{0.4pt}\\[0.5cm] % Top line
+
+    \rule{\textwidth}{0.4pt}\\[0.5cm]
     {\Huge\bfseries Group 15 Project Report:\\Portable Task Manager\par}
     \vspace{0.5cm}
-    \rule{\textwidth}{0.4pt}\\[2cm]    % Bottom line
+    \rule{\textwidth}{0.4pt}\\[2cm] 
 
-    
-    % Authors
     {\Large Adnan Erlangga Raharja, Ha Pham, Yasiru Bhagya, Yoav Kalisher\par}
     \vspace{1cm}
-
-    % Date
+    
     {\Large \today\par}
 
-    % Fill remaining space
     \vspace*{\fill}
 \end{titlepage}
 
@@ -220,12 +212,11 @@ We have also explored the efficacy of leveraging free general-purpose note takin
 Students have four key types of tasks that we have identified as a part of their studies: 
 
 \begin{enumerate}
-\item Individual homework assignments – These entail work that each student does by him- or herself, often consisting of multiple parts to complete. For example, a student may have to submit a C programming assignment that has to enable a specific set of functionality, or a student may have to write an essay about a topic with a specific structure. These often have strict deadlines, either for individual components or for the submission as a whole.
-\item Self-guided learning – Many classes require students to do additional self-guided learning outside of lectures in the form of articles and books to read or videos to watch. These vary in length, content, and structure, but can usually be broken down into discrete subparts. Most teachers do not have formal deadlines for the learning, but will reference it throughout the course or will expect the student to use the knowledge in various assignments or exams.
+\item Individual homework assignments – These entail work that each student does by him- or herself, often consisting of multiple parts to complete. These often have strict deadlines, either for individual components or for the submission as a whole.
+\item Self-guided learning – Many classes require students to do additional self-guided learning outside of lectures in the form of articles and books to read or videos to watch. Most teachers do not have formal deadlines for the learning, but will reference it throughout the course or will expect the student to use the knowledge in various assignments or exams.
 \item Exam preparation – Many courses end with a comprehensive exam covering all of the material taught in the course. Evidence shows that some study techniques are much more effective than others \citep{dunlosky2013improving}, which reinforces the importance of structured preparation tools. Succeeding in these exams requires extensive preparation and review of the course’s provided resources, and may also entail completing practice exams or exercises provided by the instructor.
-\item Group work – Group work is similar to individual work, with the added complexity of having to communicate and orchestrate tasks with other students. This means all members of the group should have easy access to not just which tasks need to be done for an assignment, but also the current state of all tasks and who is assigned to work on them. This also includes needing to be able to schedule times when work needs to be done in teams.
+\item Group work – Group work is similar to individual work, with the added complexity of having to communicate and orchestrate tasks with other students. This means all members of the group should have easy access to not just which tasks need to be done for an assignment, but also the current state of all tasks and who is assigned to work on them.
 \end{enumerate}
-
 
 
 \section{Methodology}
@@ -244,7 +235,7 @@ Our team used a waterfall-style model of software development. We began by defin
 \begin{enumerate}
 \item Project Manager - In charge of managing communication, ensuring project is on track or providing support to keep project on track, and documenting progress.
 \item Frontend Developer - In charge of creating interactive user interface for the app
-\item Backend Deveoper - In charge of creating the API and database for the app
+\item Backend Developer - In charge of creating the API and database for the app
 \item QA Engineer - In charge of testing and validating the app, ensuring the product meets requirements, and documenting outcomes.
 \end{enumerate}
 
@@ -347,14 +338,16 @@ Unfortunately, we did not have time to add functionality so that multiple differ
 
 Our telegram bot enables users to send structured language messages to add tasks to their database. They first have to connect their email to an account, then have access to use the bot. The bot can authorize the user, add a task, and list their current tasks. It does so by accessing the corresponding endpoints in the backend.
 
-\section{Reflection}
-Our team has gained hands-on experience with both the technical and organizational aspects of developing a web-based application when working with this project. With everything we did, our primary takeaway was the importance of matching the limited timeframe and resources available. Working on a full project in 8 weeks while juggling other responsibilities proved to be a meaningful challenge and required us to maximize all of the time we spent working. As a part of this, we also recognized trying to include too many features would have compromised stability given how little time we had to fully implement everything. From this course project, our team also learned how essential accessibility considerations are in making sure that a tool can be used by students. As we mentioned, there are a wide variety of different students with different preferences for working, and ensuring we could accomodate all of those needs required extensive consideration. Finally, this project highlighted the value of collaboration within team members: dividing responsibilities, and communicating effectively. 
+\section{Results and Discussion}
+Our team aimed to build a portable task manager in eight weeks that fulfilled the needs of students to fill a gap in the market for a lightweight tool that was affordable and accessible. Over the course of this project, we believe we have been successful in creating a minimum viable product that works for students with a variety of different needs.
 
-In the future, the app could be improved with additional features that we did not have time to implement. Enabling group work and shared tasks would be the highest priority, followed by extensive testing and support for multiple languages and different fonts to make the tool more accessible for more users.
+However, the app could still be improved with additional features that we did not have time to implement. Enabling group work and shared tasks would be the highest priority, followed by support for multiple languages and different fonts to make the tool more accessible for more users. Additionally, work to simplify the startup process for the app itself would make it easier for students with no technical background to utilize it. Finally, we would also want to find a way to easily advertise and distribute the app, so more students know it exists and can access it.
 
 
-\section{Contributions}
-Yoav and Ha co-wrote the abstract, introduction, background, methods, and ethical considerations. Methods were compiled based on notes written by each team member. Ha compiled and structured the references. Yasiru and Adnan wrote the implementation section.
+\section{Contributions and Reflection}
+Our team has gained hands-on experience with both the technical and organizational aspects of developing a web-based application when working with this project. With everything we did, our primary takeaway was the importance of matching the limited timeframe and resources available. Working on a full project in 8 weeks while juggling other responsibilities proved to be a meaningful challenge and required us to maximize all of the time we spent working. As a part of this, we also recognized trying to include too many features would have compromised stability given how little time we had to fully implement everything. From this course project, our team also learned how essential accessibility considerations are in making sure that a tool can be used by students. As we mentioned, there are a wide variety of different students with different preferences for working, and ensuring we could accommodate all of those needs required extensive consideration. Finally, this project highlighted the value of collaboration within team members: dividing responsibilities, and communicating effectively. 
+
+Yoav and Ha co-wrote the abstract, introduction, background, methods, ethical considerations, and conclusion. Methods were compiled based on notes written by each team member. Ha compiled and structured the references. Yasiru and Adnan wrote the implementation section based on their respective coding work.
 
 
 \bibliographystyle{plainnat}
@@ -362,9 +355,3 @@ Yoav and Ha co-wrote the abstract, introduction, background, methods, and ethica
 
 
 \end{document}
-
-%%% Local Variables: ***
-%%% mode: latex ***
-%%% TeX-master: "main.tex"  ***
-%%% ispell-local-dictionary: "british"  ***
-%%% End: ***
