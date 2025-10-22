@@ -128,7 +128,7 @@
 }
 
 \usepackage[activate={true,nocompatibility},final,tracking=true,kerning=true,spacing=true,factor=1100,stretch=10,shrink=10]{microtype}
-\usepackage[paper=a4paper,text={13cm,24cm},marginparsep=5mm,marginparwidth=45mm,inner=20mm]{geometry}
+\usepackage[paper=a4paper,margin=25mm]{geometry}
 
 \newcommand{\RED}[1]{\textcolor{red}{#1}}
 \newcommand{\ie}{\emph{i.e.,}}
@@ -142,7 +142,6 @@
 \renewcommand{\bfdefault}{b}
 \clearpage
 
-%% You can remove this line if you compile with --synctex=1 (see Makefile)
 \synctex=1
 \pagestyle{plain}
 
@@ -150,17 +149,35 @@
 
 \begin{titlepage}
     \centering
-    \vspace*{3cm} % Pushes content down the page
+    % Vertical centering
+    \vspace*{\fill}
 
-    {\Huge\bfseries Group 15 Project Report\par}
-    \vspace{2cm}
+    % University name
+    {\Large Uppsala University\par}
+    \vspace{1cm}
 
+    % Seal/logo
+    \includegraphics[width=0.25\textwidth]{Uppsala_University_seal.png}\par
+    \vspace{1cm}
+    
+    {\Large Adv. Computer Science Studies in Sweden \\ \& Intro to Studies in Embedded Systems, joint section \\ 1DT032/1DT086 HT25}
+
+    % Title
+    \rule{\textwidth}{0.4pt}\\[0.5cm] % Top line
+    {\Huge\bfseries Group 15 Project Report:\\Portable Task Manager\par}
+    \vspace{0.5cm}
+    \rule{\textwidth}{0.4pt}\\[2cm]    % Bottom line
+
+    
+    % Authors
     {\Large Adnan Erlangga Raharja, Ha Pham, Yasiru Bhagya, Yoav Kalisher\par}
-    \vspace{2cm}
+    \vspace{1cm}
 
+    % Date
     {\Large \today\par}
 
-    \vfill
+    % Fill remaining space
+    \vspace*{\fill}
 \end{titlepage}
 
 \vspace*{3cm}
@@ -316,7 +333,7 @@ Unfortunately, we did not have time to add functionality so that multiple differ
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1.0\textwidth]{telegram_bot.png}
+    \includegraphics[width=0.8\textwidth]{telegram_bot.png}
     \caption{Sequence Diagram of Telegram Bot Interactions}
     \label{fig:telegram-diagram}
 \end{figure}
