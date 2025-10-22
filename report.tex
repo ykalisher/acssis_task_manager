@@ -8,7 +8,9 @@
 \usepackage[scale=0.9]{inconsolata}
 
 \usepackage[sf]{titlesec}
+\usepackage{float}
 \usepackage[square,sort,colon,authoryear]{natbib}
+\usepackage{graphicx}
 %\usepackage[export]{adjustbox}
 
 \usepackage{
@@ -207,6 +209,8 @@ Students have four key types of tasks that we have identified as a part of their
 \item Group work – Group work is similar to individual work, with the added complexity of having to communicate and orchestrate tasks with other students. This means all members of the group should have easy access to not just which tasks need to be done for an assignment, but also the current state of all tasks and who is assigned to work on them. This also includes needing to be able to schedule times when work needs to be done in teams.
 \end{enumerate}
 
+
+
 \section{Methodology}
 \subsection{Scope}
 We determined the functional requirements for our task management tool based on our own experiences as students getting master’s degrees from Uppsala University. Of our four group members, two of us are majoring in computer science, and two are majoring in embedded systems. We used our current courses for reference on the kind of tasks we would need to be able to track in the application, and compared them to the tools we currently have access to. 
@@ -227,8 +231,7 @@ Our team used a waterfall-style model of software development. We began by defin
 \item QA Engineer - In charge of testing and validating the app, ensuring the product meets requirements, and documenting outcomes.
 \end{enumerate}
 
-
-The team met every week virtually to discuss progress, blockers, and upcoming deadlines, and maintained active communication through Whatsapp to coordinate tasks that required multiple team members.
+The team met every week virtually to discuss progress, blockers, and upcoming deadlines, and maintained active communication through Whatsapp to coordinate tasks that required multiple team members. All of our code was stored on a shared github repository that we all had access to, ensuring we could test new features and provide feedback.
 
 \section{Ethical Considerations}
 Students have a wide variety of backgrounds and needs when it comes to creating and managing tasks. Prior work emphasizes that digital learning and productivity tools must take into account diverse accessibility requirements to avoid excluding certain groups of learners \citep{seale2013learning}. We wanted to be mindful of this when designing our website by ensuring that it is accessible for a wide variety of people. This meant providing features like the ability to change text to more dyslexic-friendly fonts or to be larger, ensuring there was enough space for users to enter tasks in different languages \citep{al2016universal}, and providing options for how much information a user wants to see at once in case they may feel overwhelmed seeing too many tasks at once \citep{spina2019wcag}. International perspectives on accessibility stress that tools should be adaptable to diverse cultural and linguistic contexts \citep{world2011world}.
@@ -240,11 +243,97 @@ One of our last big accessibility features was to make the tool more accessible 
 
 \section{Implementation}
 
-Once we finished developing the frontend and backend, we needed to test the application to ensure it ran properly on the Raspberry Pi, which was our baseline for hardware that the app could run on. The Raspberry Pi has frequently been used in educational and lightweight computing projects due to its accessibility and low cost \citep{richardson2014getting}. It needed to be able to install the frameworks we needed, clone the repository, and start up the web app to be accessible from the internet. For the backend, we selected Python with a REST API architecture, leveraging lightweight frameworks such as Flask that are commonly used in educational and rapid development contexts \citep{grinberg2018flask}. We then ran tests to ensure everything worked as expected.
+Our web app was split into two parts: the backend, which would run on our raspberry pi and run our API and database, and the frontend, which handled user interactions on a browser. We also had a telegram bot that could be used to enter tasks using structured language.
 
+\subsection{Backend}
+Our backend consisted of an API and a database. Our API was written in python using the Flask framework, and had endpoints for authentication and managing task data. We had the following endpoints available:
+
+\begin{table}[H]
+    \centering
+    \caption{Backend API Endpoints}
+    \label{tab:api-endpoints}
+    \begin{tabular}{l l p{8cm}}
+        \toprule
+        \textbf{HTTP Method} & \textbf{Endpoint} & \textbf{Description} \\
+        \midrule
+        POST & /api/auth/register & Register a new user. \\
+        POST & /api/auth/login & Login user and get access token. \\
+        GET & /api/auth/me & Get current user info (requires authentication). \\
+        DELETE & /api/auth/delete-account & Delete account and all user's tasks (requires authentication). \\
+        GET & /api/tasks & Get current user's tasks (supports filtering). \\
+        POST & /api/tasks & Create a new task for current user. \\
+        GET & /api/tasks/\textless id\textgreater & Get a specific task (if owned by current user). \\
+        PUT & /api/tasks/\textless id\textgreater & Update a specific task (if owned by current user). \\
+        DELETE & /api/tasks/\textless id\textgreater & Delete a specific task (if owned by current user). \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+These endpoints met the privacy requirements of our system, ensuring users only have access to their own tasks, and the functional requirements of our system, ensuring users could flexibly manage their tasks.
+
+Our database had two main tables: users and tasks. Our user table was simple: a name, email, password, and internal ID. Our task table was larger, and included more information.
+
+\begin{table}[H]
+    \centering
+    \caption{Database Schema for Task Table}
+    \label{tab:database-schema}
+    \begin{tabular}{l l p{8cm}}
+        \toprule
+        \textbf{Field} & \textbf{Type} & \textbf{Description} \\
+        \midrule
+        Title & string & User-provided title for the task. \\
+        Description & string & User-provided description for the task. \\
+        Priority & string & Defined as a string in the database. \\
+        User ID & UUID & Owning user. \\
+        Due date & date & Due date of the task. \\
+        Status & string & User-provided status of the task (e.g., \texttt{todo}, \texttt{finished}, etc.). \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The task endpoints would be used to interface with the database in order to avoid users directly manipulating data and accidentally causing errors.
+
+\subsection{Frontend}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{dashboard_screenshot.jpeg}
+    \caption{Screenshot of the Dashboard with Example Tasks}
+    \label{fig:dashboard-screenshot}
+\end{figure}
+
+Our frontend has a few different pages to enable the user to use our task manager. We have a few pages for user management (logins and registration) but most of the work went into the main task dashboard.
+
+The dashboard is where users can add, edit, and interact with tasks. All tasks are clickable and editable from this page. Task data can be edited as text where relevant (for title and description, for example), and the user can also drag tasks between different subsections.
+
+We decided to structure the dashboard as a kanban board because it fit neatly with having a status, and provides an easy interface for quickly identified what has to be done and when.
+
+Along with all of the core pieces mentioned earlier, the frontend also adds the ability to add tags to tasks. Each task can be assigned multiple tags, and multiple tasks can have the same tag. The user can then filter on the dashboard to only see tasks with specified tags, which allows the user to focus on a specific project or area instead of having to see everything at the same time.
+
+Unfortunately, we did not have time to add functionality so that multiple different users could see the same task. While this was an important part of our project, we did not have the time to build a secure version of the feature, and the feature had to be dropped.
+
+\subsection{Telegram Bot}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{telegram_bot.png}
+    \caption{Sequence Diagram of Telegram Bot Interactions}
+    \label{fig:telegram-diagram}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{telegram_example.png}
+    \caption{Using our Telegram bot to register and view tasks (left) and add new tasks (right)}
+    \label{fig:telegram-example}
+\end{figure}
+
+Our telegram bot enables users to send structured language messages to add tasks to their database. They first have to connect their email to an account, then have access to use the bot. The bot can authorize the user, add a task, and list their current tasks. It does so by accessing the corresponding endpoints in the backend.
 
 \section{Reflection}
 Our team has gained hands-on experience with both the technical and organizational aspects of developing a web-based application when working with this project. With everything we did, our primary takeaway was the importance of matching the limited timeframe and resources available. Working on a full project in 8 weeks while juggling other responsibilities proved to be a meaningful challenge and required us to maximize all of the time we spent working. As a part of this, we also recognized trying to include too many features would have compromised stability given how little time we had to fully implement everything. From this course project, our team also learned how essential accessibility considerations are in making sure that a tool can be used by students. As we mentioned, there are a wide variety of different students with different preferences for working, and ensuring we could accomodate all of those needs required extensive consideration. Finally, this project highlighted the value of collaboration within team members: dividing responsibilities, and communicating effectively. 
+
+In the future, the app could be improved with additional features that we did not have time to implement. Enabling group work and shared tasks would be the highest priority, followed by extensive testing and support for multiple languages and different fonts to make the tool more accessible for more users.
 
 
 \section{Contributions}
